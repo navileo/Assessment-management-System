@@ -55,7 +55,7 @@ This project is a full-stack web application for managing assessments and genera
 ## Usage
 
 1.  **Register/Login:** Access the frontend application and register a new user or log in with existing credentials.
-2.  **Generate Report:** Navigate to the `/report` page, enter a session ID (e.g., `sess_002`), and click "Generate Report". A PDF report will be generated and downloaded.
+2.  **Generate Report:** Navigate to the `/report` page, enter a session ID (e.g. sess_002, `sess_002`), and click "Generate Report". A PDF report will be generated and downloaded.
 
 ## Project Structure
 

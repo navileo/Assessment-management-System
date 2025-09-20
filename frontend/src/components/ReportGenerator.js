@@ -1,12 +1,25 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from './AuthContext';
 
 function ReportGenerator() {
   const [sessionId, setSessionId] = useState('');
+  const navigate = useNavigate();
+  const { logout, token } = useAuth(); // Get token from useAuth
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`http://localhost:3001/generate-report?session_id=${sessionId}`);
+      const response = await fetch(`http://localhost:3001/generate-report?session_id=${sessionId}`, {
+        headers: {
+          'x-auth-token': token, // Include the token in the request headers
+        },
+      });
       if (response.ok) {
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
@@ -50,6 +63,13 @@ function ReportGenerator() {
           className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
         >
           Generate Report
+        </button>
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+        >
+          Logout
         </button>
       </div>
     </form>

@@ -13,22 +13,25 @@ exports.register = async (req, res) => {
     try {
         const { error, value } = registerSchema.validate(req.body);
         if (error) {
-            return res.status(400).send(error.details[0].message);
+            return res.status(400).json({ message: error.details[0].message });
         }
 
         const { username, password } = value;
 
         if (users.find(user => user.username === username)) {
-            return res.status(400).send('User already registered.');
+            return res.status(400).json({ message: 'User already registered.' });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
         const newUser = { id: users.length + 1, username, password: hashedPassword };
         users.push(newUser);
 
-        res.status(201).send('User registered successfully.');
+        // Generate a token for immediate login after registration
+        const token = jwt.sign({ id: newUser.id, username: newUser.username }, 'supersecretjwtkey', { expiresIn: '1h' });
+        res.status(201).json({ message: 'User registered successfully.', token });
     } catch (error) {
-        res.status(500).send('Server error.');
+        console.error('Registration error:', error);
+        res.status(500).json({ message: 'Server error.' });
     }
 };
 
@@ -48,17 +51,18 @@ exports.login = async (req, res) => {
 
         const user = users.find(u => u.username === username);
         if (!user) {
-            return res.status(400).send('Invalid credentials.');
+            return res.status(400).json({ message: 'User not found. Please sign up.' });
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-            return res.status(400).send('Invalid credentials.');
+            return res.status(400).json({ message: 'Invalid credentials.' });
         }
 
         const token = jwt.sign({ id: user.id, username: user.username }, 'supersecretjwtkey', { expiresIn: '1h' });
         res.json({ token });
     } catch (error) {
-        res.status(500).send('Server error.');
+        console.error('Login error:', error);
+        res.status(500).json({ message: 'Server error.' });
     }
 };
