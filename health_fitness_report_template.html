@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health & Fitness Report</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1 { color: #333; }
+        h2 { color: #555; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-top: 20px; }
+        .section { margin-bottom: 15px; }
+        .field { margin-bottom: 5px; }
+        .field label { font-weight: bold; margin-right: 10px; }
+        .classification { font-style: italic; color: #007bff; }
+        ul { list-style-type: none; padding: 0; }
+        li { margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Health & Fitness Assessment Report</h1>
+    <div id="report-content"></div>
+
+    <script>
+        const reportData = JSON.parse(`<!--REPORT_DATA-->`);
+        const reportConfig = JSON.parse(`<!--REPORT_CONFIG-->`);
+
+        const getNestedProperty = (obj, path) => {
+            return path.split('.').reduce((acc, part) => acc && acc[part], obj);
+        };
+
+        const applyClassification = (fieldPath, value) => {
+            const classifications = reportConfig.classifications && reportConfig.classifications[fieldPath];
+            if (classifications) {
+                for (const classification of classifications) {
+                    if (value >= classification.range[0] && value <= classification.range[1]) {
+                        return `<span class="classification">(${classification.label})</span>`;
+                    }
+                }
+            }
+            return '';
+        };
+
+        const renderReport = () => {
+            const contentDiv = document.getElementById('report-content');
+            let html = '';
+
+            reportConfig.sections.forEach(section => {
+                html += `<h2>${section.title}</h2>`;
+                html += `<div class="section">`;
+                section.fields.forEach(field => {
+                    const value = getNestedProperty(reportData, field.path);
+                    if (value !== undefined && value !== null) {
+                        if (field.type === "list") {
+                            html += `<div class="field">`;
+                            html += `<ul>`;
+                            value.forEach(item => {
+                                html += `<li>${item}</li>`;
+                            });
+                            html += `</ul>`;
+                            html += `</div>`;
+                        } else {
+                            const classificationHtml = applyClassification(field.path, value);
+                            html += `<div class="field"><label>${field.label}:</label><span>${value}</span> ${classificationHtml}</div>`;
+                        }
+                    }
+                });
+                html += `</div>`;
+            });
+            contentDiv.innerHTML = html;
+        };
+
+        document.addEventListener('DOMContentLoaded', renderReport);
+    </script>
+</body>
+</html>
